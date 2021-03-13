@@ -81,10 +81,12 @@ void BackendHandler::GlfwWindowResizedCallback(GLFWwindow* window, int width, in
 	Application::Instance().ActiveScene->Registry().view<FilmGrainEffect>().each([=](FilmGrainEffect& buf)
 	{
 		buf.Reshape(width, height);
+		buf.SetWindowSize(glm::vec2(width, height));
 	});
 	Application::Instance().ActiveScene->Registry().view<PixelateEffect>().each([=](PixelateEffect& buf)
 	{
 		buf.Reshape(width, height);
+		buf.SetWindowSize(glm::vec2(width, height));
 	});
 }
 

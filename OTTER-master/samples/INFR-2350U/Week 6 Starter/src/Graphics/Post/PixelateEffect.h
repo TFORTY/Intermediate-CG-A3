@@ -20,6 +20,7 @@ public:
 
 	//Setters
 	void SetPixelSize(float size);
+	void SetWindowSize(glm::vec2 size);
 
 private:
 	glm::vec2 _windowSize;
