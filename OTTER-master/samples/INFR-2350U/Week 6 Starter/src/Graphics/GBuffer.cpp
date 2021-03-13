@@ -52,7 +52,7 @@ void GBuffer::UnbindLighting()
 	_gBuffer.UnbindTexture(3);
 }
 
-void GBuffer::DrawBuffersToScreen() //Make separate ones for each toggle (maybe use glViewPort(0, 0, width, height)?
+void GBuffer::DrawBuffersToScreen() 
 {
 	_passThrough->Bind();
 
@@ -81,14 +81,50 @@ void GBuffer::DrawBuffersToScreen() //Make separate ones for each toggle (maybe 
 
 void GBuffer::DrawPositionBuffer()
 {
+	_passThrough->Bind();
+
+	glViewport(0, 0, _windowWidth, _windowHeight);
+	_gBuffer.BindColorAsTexture(Target::POSITION, 0);
+	_gBuffer.DrawFullscreenQuad();
+	_gBuffer.UnbindTexture(0);
+
+	_passThrough->UnBind();
 }
 
 void GBuffer::DrawNormalsBuffer()
 {
+	_passThrough->Bind();
+
+	glViewport(0, 0, _windowWidth, _windowHeight);
+	_gBuffer.BindColorAsTexture(Target::NORMAL, 0);
+	_gBuffer.DrawFullscreenQuad();
+	_gBuffer.UnbindTexture(0);
+
+	_passThrough->UnBind();
 }
 
 void GBuffer::DrawAlbedoBuffer()
 {
+	_passThrough->Bind();
+
+	glViewport(0, 0, _windowWidth, _windowHeight);
+	_gBuffer.BindColorAsTexture(Target::ALBEDO, 0);
+	_gBuffer.DrawFullscreenQuad();
+	_gBuffer.UnbindTexture(0);
+
+	_passThrough->UnBind();
+}
+
+void GBuffer::DrawSpecularBuffer()
+{
+	_passThrough->Bind();
+
+	glViewport(0, 0, _windowWidth, _windowHeight);
+	_gBuffer.BindColorAsTexture(Target::SPECULAR, 0);
+	_gBuffer.DrawFullscreenQuad();
+	_gBuffer.UnbindTexture(0);
+
+	_passThrough->UnBind();
 }
 
 void GBuffer::Reshape(unsigned width, unsigned height)

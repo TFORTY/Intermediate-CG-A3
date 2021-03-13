@@ -40,6 +40,10 @@ int main() {
 	std::vector<GameObject> controllables;
 
 	bool drawGBuffer = false;
+	bool drawAlbedoBuffer = false;
+	bool drawNormalsBuffer = false;
+	bool drawPositionsBuffer = false;
+	bool drawSpecularBuffer = false;
 	bool drawIllumBuffer = false;
 
 	BackendHandler::InitAll();
@@ -195,6 +199,59 @@ int main() {
 					}				
 				}
 			}
+
+			if (ImGui::CollapsingHeader("GBuffer Toggles"))
+			{
+				if (ImGui::Checkbox("Albedo Buffer", &drawAlbedoBuffer))
+				{ 
+					drawNormalsBuffer = false;
+					drawPositionsBuffer = false;
+					drawSpecularBuffer = false;
+					drawGBuffer = false;
+					drawIllumBuffer = false;
+				}							
+				if (ImGui::Checkbox("Normals Buffer", &drawNormalsBuffer))
+				{ 
+					drawAlbedoBuffer = false;
+					drawPositionsBuffer = false;
+					drawSpecularBuffer = false;
+					drawGBuffer = false;
+					drawIllumBuffer = false;
+				}
+				if (ImGui::Checkbox("Positions Buffer", &drawPositionsBuffer))
+				{ 
+					drawAlbedoBuffer = false;
+					drawNormalsBuffer = false;
+					drawSpecularBuffer = false;
+					drawGBuffer = false;
+					drawIllumBuffer = false;
+				}
+				if (ImGui::Checkbox("Specular Buffer", &drawSpecularBuffer))
+				{
+					drawAlbedoBuffer = false;
+					drawNormalsBuffer = false;
+					drawPositionsBuffer = false;
+					drawGBuffer = false;
+					drawIllumBuffer = false;
+				}
+				if (ImGui::Checkbox("All G-Buffers", &drawGBuffer))
+				{
+					drawAlbedoBuffer = false;
+					drawNormalsBuffer = false;
+					drawPositionsBuffer = false;
+					drawSpecularBuffer = false;
+					drawIllumBuffer = false;
+				}
+				if (ImGui::Checkbox("Light Accumulation Buffer", &drawIllumBuffer))
+				{
+					drawAlbedoBuffer = false;
+					drawNormalsBuffer = false;
+					drawPositionsBuffer = false;
+					drawSpecularBuffer = false;
+					drawGBuffer = false;
+				}
+			}
+
 			//if (ImGui::CollapsingHeader("Environment generation"))
 			//{
 			//	if (ImGui::Button("Regenerate Environment", ImVec2(200.0f, 40.0f)))
@@ -202,6 +259,7 @@ int main() {
 			//		EnvironmentGenerator::RegenerateEnvironment();
 			//	}
 			//}
+
 			if (ImGui::CollapsingHeader("Light Level Lighting Settings"))
 			{
 				/*if (ImGui::DragFloat3("Light Direction/Position", glm::value_ptr(theSun._lightDirection), 0.01f, -10.0f, 10.0f)) 
@@ -474,8 +532,6 @@ int main() {
 			// the scope. If you wanted to do some method on the class, your best bet would be to give it a method and
 			// use std::bind
 			keyToggles.emplace_back(GLFW_KEY_T, [&]() { cameraObject.get<Camera>().ToggleOrtho(); });
-			keyToggles.emplace_back(GLFW_KEY_O, [&]() { drawGBuffer = !drawGBuffer; });
-			keyToggles.emplace_back(GLFW_KEY_P, [&]() { drawIllumBuffer = !drawIllumBuffer; });
 
 			controllables.push_back(obj2);
 
@@ -658,7 +714,37 @@ int main() {
 
 			shadowBuffer->UnbindTexture(30);
 
-			if (drawGBuffer)
+			/*if (drawGBuffer)
+			{
+				gBuffer->DrawBuffersToScreen();
+			}
+			else if (drawIllumBuffer)
+			{
+				illuminationBuffer->DrawIllumBuffer();
+			}
+			else
+			{
+				effects[activeEffect]->ApplyEffect(illuminationBuffer);
+				effects[activeEffect]->DrawToScreen();
+			}*/
+
+			if (drawAlbedoBuffer)
+			{
+				gBuffer->DrawAlbedoBuffer();
+			}
+			else if (drawNormalsBuffer)
+			{
+				gBuffer->DrawNormalsBuffer();			
+			}
+			else if (drawPositionsBuffer)
+			{
+				gBuffer->DrawPositionBuffer();			
+			}
+			else if (drawSpecularBuffer)
+			{
+				gBuffer->DrawSpecularBuffer();
+			}
+			else if (drawGBuffer)
 			{
 				gBuffer->DrawBuffersToScreen();
 			}
