@@ -17,4 +17,6 @@ struct PointLight
 	float _ambientPow = 0.1f;
 	float _lightAmbientPow = 0.05f;
 	float _lightSpecularPow = 1.0f;
+
+	float _shadowBias = 0.005;
 };
