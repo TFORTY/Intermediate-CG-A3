@@ -57,3 +57,8 @@ void FilmGrainEffect::SetStrength(float strength)
 {
 	_strength = strength;
 }
+
+void FilmGrainEffect::SetWindowSize(glm::vec2 size)
+{
+	_windowSize = size;
+}

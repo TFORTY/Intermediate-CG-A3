@@ -21,6 +21,7 @@ public:
 
 	//Setters
 	void SetStrength(float strength);
+	void SetWindowSize(glm::vec2 size);
 
 private:
 	glm::vec2 _windowSize;

@@ -48,3 +48,8 @@ void PixelateEffect::SetPixelSize(float size)
 {
 	_pixelSize = size;
 }
+
+void PixelateEffect::SetWindowSize(glm::vec2 size)
+{
+	_windowSize = size;
+}
