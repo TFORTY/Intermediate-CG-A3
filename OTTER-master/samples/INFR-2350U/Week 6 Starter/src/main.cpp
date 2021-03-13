@@ -39,6 +39,13 @@ int main() {
 	int selectedVao = 0; // select cube by default
 	std::vector<GameObject> controllables;
 
+	bool drawGBuffer = false;
+	bool drawAlbedoBuffer = false;
+	bool drawNormalsBuffer = false;
+	bool drawPositionsBuffer = false;
+	bool drawSpecularBuffer = false;
+	bool drawIllumBuffer = false;
+
 	BackendHandler::InitAll();
 
 	// Let OpenGL know that we want debug output, and route it to our handler function
@@ -61,6 +68,12 @@ int main() {
 		simpleDepthShader->LoadShaderPartFromFile("shaders/simple_depth_frag.glsl", GL_FRAGMENT_SHADER);
 		simpleDepthShader->Link();
 
+		//Init gBuffer shader
+		Shader::sptr gBufferShader = Shader::Create();
+		gBufferShader->LoadShaderPartFromFile("shaders/vertex_shader.glsl", GL_VERTEX_SHADER);
+		gBufferShader->LoadShaderPartFromFile("shaders/gBuffer_pass_frag.glsl", GL_FRAGMENT_SHADER);
+		gBufferShader->Link();
+
 		// Load our shaders
 		Shader::sptr shader = Shader::Create();
 		shader->LoadShaderPartFromFile("shaders/vertex_shader.glsl", GL_VERTEX_SHADER);
@@ -68,20 +81,22 @@ int main() {
 		shader->LoadShaderPartFromFile("shaders/directional_blinn_phong_frag.glsl", GL_FRAGMENT_SHADER);
 		shader->Link();
 
-		//Creates our directional Light
-		DirectionalLight theSun;
-		UniformBuffer directionalLightBuffer;
+		////Creates our directional Light
+		//DirectionalLight theSun;
+		//UniformBuffer directionalLightBuffer;
 
-		//Allocates enough memory for one directional light (we can change this easily, but we only need 1 directional light)
-		directionalLightBuffer.AllocateMemory(sizeof(DirectionalLight));
-		//Casts our sun as "data" and sends it to the shader
-		directionalLightBuffer.SendData(reinterpret_cast<void*>(&theSun), sizeof(DirectionalLight));
+		////Allocates enough memory for one directional light (we can change this easily, but we only need 1 directional light)
+		//directionalLightBuffer.AllocateMemory(sizeof(DirectionalLight));
+		////Casts our sun as "data" and sends it to the shader
+		//directionalLightBuffer.SendData(reinterpret_cast<void*>(&theSun), sizeof(DirectionalLight));
 
-		directionalLightBuffer.Bind(0);
+		//directionalLightBuffer.Bind(0);
 
 		//Basic effect for drawing to
 		PostEffect* basicEffect;
 		Framebuffer* shadowBuffer;
+		GBuffer* gBuffer;
+		IlluminationBuffer* illuminationBuffer;
 
 		//Post Processing Effects
 		int activeEffect = 0;
@@ -184,6 +199,59 @@ int main() {
 					}				
 				}
 			}
+
+			if (ImGui::CollapsingHeader("GBuffer Toggles"))
+			{
+				if (ImGui::Checkbox("Albedo Buffer", &drawAlbedoBuffer))
+				{ 
+					drawNormalsBuffer = false;
+					drawPositionsBuffer = false;
+					drawSpecularBuffer = false;
+					drawGBuffer = false;
+					drawIllumBuffer = false;
+				}							
+				if (ImGui::Checkbox("Normals Buffer", &drawNormalsBuffer))
+				{ 
+					drawAlbedoBuffer = false;
+					drawPositionsBuffer = false;
+					drawSpecularBuffer = false;
+					drawGBuffer = false;
+					drawIllumBuffer = false;
+				}
+				if (ImGui::Checkbox("Positions Buffer", &drawPositionsBuffer))
+				{ 
+					drawAlbedoBuffer = false;
+					drawNormalsBuffer = false;
+					drawSpecularBuffer = false;
+					drawGBuffer = false;
+					drawIllumBuffer = false;
+				}
+				if (ImGui::Checkbox("Specular Buffer", &drawSpecularBuffer))
+				{
+					drawAlbedoBuffer = false;
+					drawNormalsBuffer = false;
+					drawPositionsBuffer = false;
+					drawGBuffer = false;
+					drawIllumBuffer = false;
+				}
+				if (ImGui::Checkbox("All G-Buffers", &drawGBuffer))
+				{
+					drawAlbedoBuffer = false;
+					drawNormalsBuffer = false;
+					drawPositionsBuffer = false;
+					drawSpecularBuffer = false;
+					drawIllumBuffer = false;
+				}
+				if (ImGui::Checkbox("Light Accumulation Buffer", &drawIllumBuffer))
+				{
+					drawAlbedoBuffer = false;
+					drawNormalsBuffer = false;
+					drawPositionsBuffer = false;
+					drawSpecularBuffer = false;
+					drawGBuffer = false;
+				}
+			}
+
 			//if (ImGui::CollapsingHeader("Environment generation"))
 			//{
 			//	if (ImGui::Button("Regenerate Environment", ImVec2(200.0f, 40.0f)))
@@ -191,9 +259,13 @@ int main() {
 			//		EnvironmentGenerator::RegenerateEnvironment();
 			//	}
 			//}
+
 			if (ImGui::CollapsingHeader("Light Level Lighting Settings"))
 			{
-				if (ImGui::DragFloat3("Light Direction/Position", glm::value_ptr(theSun._lightDirection), 0.01f, -10.0f, 10.0f)) 
+				/*if (ImGui::DragFloat3("Light Direction/Position", glm::value_ptr(theSun._lightDirection), 0.01f, -10.0f, 10.0f)) 
+				{
+				}*/
+				if (ImGui::DragFloat3("Light Direction/Position", glm::value_ptr(illuminationBuffer->GetSunRef()._lightDirection), 0.01f, -10.0f, 10.0f))
 				{
 				}
 			}
@@ -271,28 +343,32 @@ int main() {
 
 		// Create a material and set some properties for it
 		ShaderMaterial::sptr stoneMat = ShaderMaterial::Create();  
-		stoneMat->Shader = shader;
+		//stoneMat->Shader = shader;
+		stoneMat->Shader = gBufferShader;
 		stoneMat->Set("s_Diffuse", stone);
 		stoneMat->Set("s_Specular", stoneSpec);
 		stoneMat->Set("u_Shininess", 2.0f);
 		stoneMat->Set("u_TextureMix", 0.0f); 
 
 		ShaderMaterial::sptr grassMat = ShaderMaterial::Create();
-		grassMat->Shader = shader;
+		//grassMat->Shader = shader;
+		grassMat->Shader = gBufferShader;
 		grassMat->Set("s_Diffuse", grass);
 		grassMat->Set("s_Specular", noSpec);
 		grassMat->Set("u_Shininess", 2.0f);
 		grassMat->Set("u_TextureMix", 0.0f);
 
 		ShaderMaterial::sptr boxMat = ShaderMaterial::Create();
-		boxMat->Shader = shader;
+		//boxMat->Shader = shader;
+		boxMat->Shader = gBufferShader;
 		boxMat->Set("s_Diffuse", box);
 		boxMat->Set("s_Specular", boxSpec);
 		boxMat->Set("u_Shininess", 8.0f);
 		boxMat->Set("u_TextureMix", 0.0f);
 
 		ShaderMaterial::sptr simpleFloraMat = ShaderMaterial::Create();
-		simpleFloraMat->Shader = shader;
+		//simpleFloraMat->Shader = shader;
+		simpleFloraMat->Shader = gBufferShader;
 		simpleFloraMat->Set("s_Diffuse", simpleFlora);
 		simpleFloraMat->Set("s_Specular", noSpec);
 		simpleFloraMat->Set("u_Shininess", 8.0f);
@@ -348,6 +424,18 @@ int main() {
 
 		int width, height;
 		glfwGetWindowSize(BackendHandler::window, &width, &height);
+
+		GameObject gBufferObject = scene->CreateEntity("G Buffer");
+		{
+			gBuffer = &gBufferObject.emplace<GBuffer>();
+			gBuffer->Init(width, height);
+		}
+
+		GameObject illuminationBufferObject = scene->CreateEntity("Illumination Buffer");
+		{
+			illuminationBuffer = &illuminationBufferObject.emplace<IlluminationBuffer>();
+			illuminationBuffer->Init(width, height);
+		}
 
 		int shadowWidth = 4096;
 		int shadowHeight = 4096;
@@ -412,7 +500,7 @@ int main() {
 		//////////////////////////////////////////////////////////////////////////////////////////
 
 		/////////////////////////////////// SKYBOX ///////////////////////////////////////////////
-		{
+		//{
 			// Load our shaders
 			Shader::sptr skybox = std::make_shared<Shader>();
 			skybox->LoadShaderPartFromFile("shaders/skybox-shader.vert.glsl", GL_VERTEX_SHADER);
@@ -432,8 +520,8 @@ int main() {
 			
 			GameObject skyboxObj = scene->CreateEntity("skybox");  
 			skyboxObj.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
-			skyboxObj.get_or_emplace<RendererComponent>().SetMesh(meshVao).SetMaterial(skyboxMat).SetCastShadow(false);
-		}
+			//skyboxObj.get_or_emplace<RendererComponent>().SetMesh(meshVao).SetMaterial(skyboxMat).SetCastShadow(false);
+		//}
 		////////////////////////////////////////////////////////////////////////////////////////
 
 		// We'll use a vector to store all our key press events for now (this should probably be a behaviour eventually)
@@ -517,6 +605,8 @@ int main() {
 				effects[i]->Clear();
 			}
 			shadowBuffer->Clear();
+			gBuffer->Clear();
+			illuminationBuffer->Clear();
 
 			glClearColor(1.0f, 1.0f, 1.0f, 0.3f);
 			glEnable(GL_DEPTH_TEST);
@@ -536,8 +626,14 @@ int main() {
 
 			//Set up light space matrix
 			glm::mat4 lightProjectionMatrix = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, -30.0f, 30.0f);
-			glm::mat4 lightViewMatrix = glm::lookAt(glm::vec3(-theSun._lightDirection), glm::vec3(), glm::vec3(0.0f, 0.0f, 1.0f));
+			//glm::mat4 lightViewMatrix = glm::lookAt(glm::vec3(-theSun._lightDirection), glm::vec3(), glm::vec3(0.0f, 0.0f, 1.0f));
+			glm::mat4 lightViewMatrix = glm::lookAt(glm::vec3(-illuminationBuffer->GetSunRef()._lightDirection), glm::vec3(), glm::vec3(0.0f, 0.0f, 1.0f));
 			glm::mat4 lightSpaceViewProj = lightProjectionMatrix * lightViewMatrix;
+
+			//Set shadow stuff
+			illuminationBuffer->SetLightSpaceViewProj(lightSpaceViewProj);
+			glm::vec3 camPos = glm::inverse(view) * glm::vec4(0, 0, 0, 1);
+			illuminationBuffer->SetCamPos(camPos);
 
 			// Sort the renderers by shader and material, we will go for a minimizing context switches approach here,
 			// but you could for instance sort front to back to optimize for fill rate if you have intensive fragment shaders
@@ -577,7 +673,8 @@ int main() {
 			glfwGetWindowSize(BackendHandler::window, &width, &height);
 
 			glViewport(0, 0, width, height);
-			basicEffect->BindBuffer(0);
+			//basicEffect->BindBuffer(0);
+			gBuffer->Bind();
 			// Iterate over the render group components and draw them
 			renderGroup.each([&](entt::entity e, RendererComponent& renderer, Transform& transform) {
 				// If the shader has changed, set up it's uniforms
@@ -592,17 +689,80 @@ int main() {
 					currentMat->Apply();
 				}
 
-				shadowBuffer->BindDepthAsTexture(30);
+				//shadowBuffer->BindDepthAsTexture(30);
 				// Render the mesh
 				BackendHandler::RenderVAO(renderer.Material->Shader, renderer.Mesh, viewProjection, transform, lightSpaceViewProj);			
 			});
 
-			shadowBuffer->UnbindTexture(30);
-			basicEffect->UnbindBuffer();
+			//shadowBuffer->UnbindTexture(30);
+			//basicEffect->UnbindBuffer();
+			gBuffer->Unbind();
 
-			effects[activeEffect]->ApplyEffect(basicEffect);
+			illuminationBuffer->BindBuffer(0);
+
+			skybox->Bind();
+			BackendHandler::SetupShaderForFrame(skybox, view, projection);
+			skyboxMat->Apply();
+			BackendHandler::RenderVAO(skybox, meshVao, viewProjection, skyboxObj.get<Transform>(), lightSpaceViewProj);
+			skybox->UnBind();
+
+			illuminationBuffer->UnbindBuffer();
+
+			shadowBuffer->BindDepthAsTexture(30);
+
+			illuminationBuffer->ApplyEffect(gBuffer);
+
+			shadowBuffer->UnbindTexture(30);
+
+			/*if (drawGBuffer)
+			{
+				gBuffer->DrawBuffersToScreen();
+			}
+			else if (drawIllumBuffer)
+			{
+				illuminationBuffer->DrawIllumBuffer();
+			}
+			else
+			{
+				effects[activeEffect]->ApplyEffect(illuminationBuffer);
+				effects[activeEffect]->DrawToScreen();
+			}*/
+
+			if (drawAlbedoBuffer)
+			{
+				gBuffer->DrawAlbedoBuffer();
+			}
+			else if (drawNormalsBuffer)
+			{
+				gBuffer->DrawNormalsBuffer();			
+			}
+			else if (drawPositionsBuffer)
+			{
+				gBuffer->DrawPositionBuffer();			
+			}
+			else if (drawSpecularBuffer)
+			{
+				gBuffer->DrawSpecularBuffer();
+			}
+			else if (drawGBuffer)
+			{
+				gBuffer->DrawBuffersToScreen();
+			}
+			else if (drawIllumBuffer)
+			{
+				illuminationBuffer->DrawIllumBuffer();
+			}
+			else
+			{
+				effects[activeEffect]->ApplyEffect(illuminationBuffer);
+				effects[activeEffect]->DrawToScreen();
+			}
+
+			//gBuffer->DrawBuffersToScreen();
+
+			//effects[activeEffect]->ApplyEffect(basicEffect);
 			
-			effects[activeEffect]->DrawToScreen();
+			//effects[activeEffect]->DrawToScreen();
 			
 			// Draw our ImGui content
 			BackendHandler::RenderImGui();
@@ -611,7 +771,7 @@ int main() {
 			glfwSwapBuffers(BackendHandler::window);
 			time.LastFrame = time.CurrentFrame;
 		}
-		directionalLightBuffer.Unbind(0);
+		//directionalLightBuffer.Unbind(0);
 
 		// Nullify scene so that we can release references
 		Application::Instance().ActiveScene = nullptr;

@@ -38,6 +38,7 @@ public:
 	void DrawPositionBuffer();
 	void DrawNormalsBuffer();
 	void DrawAlbedoBuffer();
+	void DrawSpecularBuffer();
 
 	//Reshape the framebuffer
 	void Reshape(unsigned width, unsigned height);
