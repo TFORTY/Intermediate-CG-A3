@@ -52,7 +52,7 @@ void GBuffer::UnbindLighting()
 	_gBuffer.UnbindTexture(3);
 }
 
-void GBuffer::DrawBuffersToScreen()
+void GBuffer::DrawBuffersToScreen() //Make separate ones for each toggle (maybe use glViewPort(0, 0, width, height)?
 {
 	_passThrough->Bind();
 
@@ -77,6 +77,18 @@ void GBuffer::DrawBuffersToScreen()
 	_gBuffer.UnbindTexture(0);
 
 	_passThrough->UnBind();
+}
+
+void GBuffer::DrawPositionBuffer()
+{
+}
+
+void GBuffer::DrawNormalsBuffer()
+{
+}
+
+void GBuffer::DrawAlbedoBuffer()
+{
 }
 
 void GBuffer::Reshape(unsigned width, unsigned height)
