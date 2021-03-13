@@ -89,6 +89,9 @@ int main() {
 		SepiaEffect* sepiaEffect;
 		GreyscaleEffect* greyscaleEffect;
 		ColorCorrectEffect* colorCorrectEffect;
+		BloomEffect* bloomEffect;
+		FilmGrainEffect* filmGrainEffect;
+		PixelateEffect* pixelateEffect;
 		
 		// We'll add some ImGui controls to control our shader
 		BackendHandler::imGuiCallbacks.push_back([&]() {
@@ -97,6 +100,12 @@ int main() {
 				ImGui::SliderInt("Chosen Effect", &activeEffect, 0, effects.size() - 1);
 
 				if (activeEffect == 0)
+				{
+					ImGui::Text("Active Effect: No Effect");
+
+					PostEffect* temp = (PostEffect*)effects[activeEffect];
+				}
+				if (activeEffect == 1)
 				{
 					ImGui::Text("Active Effect: Sepia Effect");
 
@@ -108,7 +117,7 @@ int main() {
 						temp->SetIntensity(intensity);
 					}
 				}
-				if (activeEffect == 1)
+				if (activeEffect == 2)
 				{
 					ImGui::Text("Active Effect: Greyscale Effect");
 					
@@ -120,27 +129,68 @@ int main() {
 						temp->SetIntensity(intensity);
 					}
 				}
-				if (activeEffect == 2)
+				if (activeEffect == 3)
 				{
 					ImGui::Text("Active Effect: Color Correct Effect");
 
 					ColorCorrectEffect* temp = (ColorCorrectEffect*)effects[activeEffect];
-					static char input[BUFSIZ];
-					ImGui::InputText("Lut File to Use", input, BUFSIZ);
+					//static char input[BUFSIZ];
+					//ImGui::InputText("Lut File to Use", input, BUFSIZ);
+					//
+					//if (ImGui::Button("SetLUT", ImVec2(200.0f, 40.0f)))
+					//{
+					//	temp->SetLUT(LUT3D(std::string(input)));
+					//}
+				}
+				if (activeEffect == 4)
+				{
+					ImGui::Text("Active Effect: Bloom Effect");
 
-					if (ImGui::Button("SetLUT", ImVec2(200.0f, 40.0f)))
+					BloomEffect* temp = (BloomEffect*)effects[activeEffect];
+					float brightnessThreshold = temp->GetThreshold();
+					int blurValue = temp->GetPasses();
+
+					if (ImGui::SliderFloat("Brightness Threshold", &brightnessThreshold, 0.0f, 1.0f))
 					{
-						temp->SetLUT(LUT3D(std::string(input)));
+						temp->SetThreshold(brightnessThreshold);
+					}
+					if (ImGui::SliderInt("Blur Value", &blurValue, 0, 20))
+					{
+						temp->SetPasses(blurValue);
 					}
 				}
-			}
-			if (ImGui::CollapsingHeader("Environment generation"))
-			{
-				if (ImGui::Button("Regenerate Environment", ImVec2(200.0f, 40.0f)))
+				if (activeEffect == 5)
 				{
-					EnvironmentGenerator::RegenerateEnvironment();
+					ImGui::Text("Active Effect: Film Grain Effect");
+					
+					FilmGrainEffect* temp = (FilmGrainEffect*)effects[activeEffect];
+					float strength = temp->GetStrength();
+
+					if (ImGui::SliderFloat("Strength", &strength, 0.0f, 64.0f))
+					{
+						temp->SetStrength(strength);
+					}
+				}
+				if (activeEffect == 6)
+				{
+					ImGui::Text("Active Effect: Pixelate Effect");
+
+					PixelateEffect* temp = (PixelateEffect*)effects[activeEffect];
+					float pixelSize = temp->GetPixelSize();
+
+					if (ImGui::SliderFloat("Pixel Size", &pixelSize, 0.1f, 32.f))
+					{
+						temp->SetPixelSize(pixelSize);
+					}				
 				}
 			}
+			//if (ImGui::CollapsingHeader("Environment generation"))
+			//{
+			//	if (ImGui::Button("Regenerate Environment", ImVec2(200.0f, 40.0f)))
+			//	{
+			//		EnvironmentGenerator::RegenerateEnvironment();
+			//	}
+			//}
 			if (ImGui::CollapsingHeader("Light Level Lighting Settings"))
 			{
 				if (ImGui::DragFloat3("Light Direction/Position", glm::value_ptr(theSun._lightDirection), 0.01f, -10.0f, 10.0f)) 
@@ -263,23 +313,23 @@ int main() {
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj2);
 		}
 
-		std::vector<glm::vec2> allAvoidAreasFrom = { glm::vec2(-4.0f, -4.0f) };
-		std::vector<glm::vec2> allAvoidAreasTo = { glm::vec2(4.0f, 4.0f) };
-
-		std::vector<glm::vec2> rockAvoidAreasFrom = { glm::vec2(-3.0f, -3.0f), glm::vec2(-19.0f, -19.0f), glm::vec2(5.0f, -19.0f),
-														glm::vec2(-19.0f, 5.0f), glm::vec2(-19.0f, -19.0f) };
-		std::vector<glm::vec2> rockAvoidAreasTo = { glm::vec2(3.0f, 3.0f), glm::vec2(19.0f, -5.0f), glm::vec2(19.0f, 19.0f),
-														glm::vec2(19.0f, 19.0f), glm::vec2(-5.0f, 19.0f) };
-		glm::vec2 spawnFromHere = glm::vec2(-19.0f, -19.0f);
-		glm::vec2 spawnToHere = glm::vec2(19.0f, 19.0f);
-
-		EnvironmentGenerator::AddObjectToGeneration("models/simplePine.obj", simpleFloraMat, 40,
-			spawnFromHere, spawnToHere, allAvoidAreasFrom, allAvoidAreasTo);
-		EnvironmentGenerator::AddObjectToGeneration("models/simpleTree.obj", simpleFloraMat, 40,
-			spawnFromHere, spawnToHere, allAvoidAreasFrom, allAvoidAreasTo);
-		EnvironmentGenerator::AddObjectToGeneration("models/simpleRock.obj", simpleFloraMat, 24,
-			spawnFromHere, spawnToHere, rockAvoidAreasFrom, rockAvoidAreasTo);
-		EnvironmentGenerator::GenerateEnvironment();
+		//std::vector<glm::vec2> allAvoidAreasFrom = { glm::vec2(-4.0f, -4.0f) };
+		//std::vector<glm::vec2> allAvoidAreasTo = { glm::vec2(4.0f, 4.0f) };
+		//
+		//std::vector<glm::vec2> rockAvoidAreasFrom = { glm::vec2(-3.0f, -3.0f), glm::vec2(-19.0f, -19.0f), glm::vec2(5.0f, -19.0f),
+		//												glm::vec2(-19.0f, 5.0f), glm::vec2(-19.0f, -19.0f) };
+		//std::vector<glm::vec2> rockAvoidAreasTo = { glm::vec2(3.0f, 3.0f), glm::vec2(19.0f, -5.0f), glm::vec2(19.0f, 19.0f),
+		//												glm::vec2(19.0f, 19.0f), glm::vec2(-5.0f, 19.0f) };
+		//glm::vec2 spawnFromHere = glm::vec2(-19.0f, -19.0f);
+		//glm::vec2 spawnToHere = glm::vec2(19.0f, 19.0f);
+		//
+		//EnvironmentGenerator::AddObjectToGeneration("models/simplePine.obj", simpleFloraMat, 40,
+		//	spawnFromHere, spawnToHere, allAvoidAreasFrom, allAvoidAreasTo);
+		//EnvironmentGenerator::AddObjectToGeneration("models/simpleTree.obj", simpleFloraMat, 40,
+		//	spawnFromHere, spawnToHere, allAvoidAreasFrom, allAvoidAreasTo);
+		//EnvironmentGenerator::AddObjectToGeneration("models/simpleRock.obj", simpleFloraMat, 24,
+		//	spawnFromHere, spawnToHere, rockAvoidAreasFrom, rockAvoidAreasTo);
+		//EnvironmentGenerator::GenerateEnvironment();
 
 		// Create an object to be our camera
 		GameObject cameraObject = scene->CreateEntity("Camera");
@@ -314,12 +364,12 @@ int main() {
 			basicEffect = &framebufferObject.emplace<PostEffect>();
 			basicEffect->Init(width, height);
 		}
+		effects.push_back(basicEffect);
 
 		GameObject sepiaEffectObject = scene->CreateEntity("Sepia Effect");
 		{
 			sepiaEffect = &sepiaEffectObject.emplace<SepiaEffect>();
 			sepiaEffect->Init(width, height);
-			sepiaEffect->SetIntensity(0.0f);
 		}
 		effects.push_back(sepiaEffect);
 
@@ -336,6 +386,27 @@ int main() {
 			colorCorrectEffect->Init(width, height);
 		}
 		effects.push_back(colorCorrectEffect);
+
+		GameObject bloomEffectObject = scene->CreateEntity("Bloom Effect");
+		{
+			bloomEffect = &bloomEffectObject.emplace<BloomEffect>();
+			bloomEffect->Init(width, height);
+		}
+		effects.push_back(bloomEffect);
+
+		GameObject filmGrainEffectObject = scene->CreateEntity("Film Grain Effect");
+		{
+			filmGrainEffect = &filmGrainEffectObject.emplace<FilmGrainEffect>();
+			filmGrainEffect->Init(width, height);
+		}
+		effects.push_back(filmGrainEffect);
+
+		GameObject pixelateEffectObject = scene->CreateEntity("Pixelate Effect");
+		{
+			pixelateEffect = &pixelateEffectObject.emplace<PixelateEffect>();
+			pixelateEffect->Init(width, height);
+		}
+		effects.push_back(pixelateEffect);
 
 		#pragma endregion 
 		//////////////////////////////////////////////////////////////////////////////////////////
@@ -364,7 +435,6 @@ int main() {
 			skyboxObj.get_or_emplace<RendererComponent>().SetMesh(meshVao).SetMaterial(skyboxMat).SetCastShadow(false);
 		}
 		////////////////////////////////////////////////////////////////////////////////////////
-
 
 		// We'll use a vector to store all our key press events for now (this should probably be a behaviour eventually)
 		std::vector<KeyPressWatcher> keyToggles;
@@ -448,7 +518,6 @@ int main() {
 			}
 			shadowBuffer->Clear();
 
-
 			glClearColor(1.0f, 1.0f, 1.0f, 0.3f);
 			glEnable(GL_DEPTH_TEST);
 			glClearDepth(1.0f);
@@ -523,11 +592,9 @@ int main() {
 					currentMat->Apply();
 				}
 
-
 				shadowBuffer->BindDepthAsTexture(30);
 				// Render the mesh
-				BackendHandler::RenderVAO(renderer.Material->Shader, renderer.Mesh, viewProjection, transform, lightSpaceViewProj);
-				
+				BackendHandler::RenderVAO(renderer.Material->Shader, renderer.Mesh, viewProjection, transform, lightSpaceViewProj);			
 			});
 
 			shadowBuffer->UnbindTexture(30);
@@ -549,11 +616,9 @@ int main() {
 		// Nullify scene so that we can release references
 		Application::Instance().ActiveScene = nullptr;
 		//Clean up the environment generator so we can release references
-		EnvironmentGenerator::CleanUpPointers();
+		//EnvironmentGenerator::CleanUpPointers();
 		BackendHandler::ShutdownImGui();
 	}	
-
-
 
 	// Clean up the toolkit logger so we don't leak memory
 	Logger::Uninitialize();

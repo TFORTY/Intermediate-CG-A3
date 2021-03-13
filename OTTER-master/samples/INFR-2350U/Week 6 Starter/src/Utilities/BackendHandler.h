@@ -7,6 +7,9 @@
 #include "Graphics/Post/GreyscaleEffect.h"
 #include "Graphics/Post/SepiaEffect.h"
 #include "Graphics/Post/ColorCorrectEffect.h"
+#include "Graphics/Post/BloomEffect.h"
+#include "Graphics/Post/FilmGrainEffect.h"
+#include "Graphics/Post/PixelateEffect.h"
 
 #include <iostream>
 #include <Logging.h>

@@ -4,7 +4,6 @@ void PostEffect::Init(unsigned width, unsigned height)
 {
 	if (!_shaders.size() > 0)
 	{
-
 		int index = int(_buffers.size());
 		_buffers.push_back(new Framebuffer());
 		_buffers[index]->AddColorTarget(GL_RGBA8);
@@ -16,7 +15,6 @@ void PostEffect::Init(unsigned width, unsigned height)
 	_shaders[_shaders.size() - 1]->LoadShaderPartFromFile("shaders/passthrough_vert.glsl", GL_VERTEX_SHADER);
 	_shaders[_shaders.size() - 1]->LoadShaderPartFromFile("shaders/passthrough_frag.glsl", GL_FRAGMENT_SHADER);
 	_shaders[_shaders.size() - 1]->Link();
-
 }
 
 void PostEffect::ApplyEffect(PostEffect* previousBuffer)
