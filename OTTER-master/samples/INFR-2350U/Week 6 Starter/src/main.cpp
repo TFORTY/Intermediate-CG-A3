@@ -41,7 +41,7 @@ int main() {
 
 	bool drawGBuffer = false;
 	bool drawAlbedoBuffer = false;
-	bool drawNormalsBuffer = false;
+	bool drawNormalsBuffer = false; 
 	bool drawPositionsBuffer = false;
 	bool drawSpecularBuffer = false;
 	bool drawIllumBuffer = false;
