@@ -286,9 +286,10 @@ int main() {
 
 		// Load some textures from files
 		
-		Texture2D::sptr Baselevel = Texture2D::LoadFromFile("images/Base Level_color.png");
-		Texture2D::sptr Building = Texture2D::LoadFromFile("images/Building_color.png");		
-		Texture2D::sptr Building2 = Texture2D::LoadFromFile("images/Building2_color.png");
+		Texture2D::sptr Baselevelobjects = Texture2D::LoadFromFile("images/FloorObjects_color.png");
+		Texture2D::sptr Baselevel = Texture2D::LoadFromFile("images/BaseLevel_color.png");
+		Texture2D::sptr Building2 = Texture2D::LoadFromFile("images/Building_color.png");		
+		Texture2D::sptr Building = Texture2D::LoadFromFile("images/Building2_color.png");
 		Texture2D::sptr Floor = Texture2D::LoadFromFile("images/Floor_color.png");
 		Texture2D::sptr Monitor = Texture2D::LoadFromFile("images/Monitor-Albedo.png");
 		Texture2D::sptr Tower = Texture2D::LoadFromFile("images/Tower_color.png");
@@ -335,6 +336,7 @@ int main() {
 			scene->Registry().group<RendererComponent>(entt::get_t<Transform>());
 
 		// Create a material and set some properties for it
+		ShaderMaterial::sptr baselevelObjectsMat = ShaderMaterial::Create();  
 		ShaderMaterial::sptr baselevelMat = ShaderMaterial::Create();  
 		ShaderMaterial::sptr buildingMat = ShaderMaterial::Create();  
 		ShaderMaterial::sptr building2Mat = ShaderMaterial::Create();  
@@ -351,6 +353,12 @@ int main() {
 		baselevelMat->Set("s_Specular", noSpec);
 		baselevelMat->Set("u_Shininess", 2.0f);
 		baselevelMat->Set("u_TextureMix", 0.0f); 
+		
+		baselevelObjectsMat->Shader = gBufferShader;
+		baselevelObjectsMat->Set("s_Diffuse", Baselevelobjects);
+		baselevelObjectsMat->Set("s_Specular", noSpec);
+		baselevelObjectsMat->Set("u_Shininess", 2.0f);
+		baselevelObjectsMat->Set("u_TextureMix", 0.0f); 
 		
 		buildingMat->Shader = gBufferShader;
 		buildingMat->Set("s_Diffuse", Building);
@@ -403,7 +411,9 @@ int main() {
 		GameObject obj = scene->CreateEntity("Ground Floor");
 		{
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/plane.obj");
-			obj.emplace<RendererComponent>().SetMesh(vao).SetMaterial(floorMat);
+			obj.emplace<RendererComponent>().SetMesh(vao).SetMaterial(baselevelMat);
+			obj.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
+			obj.get<Transform>().SetLocalRotation(90.0f, 0.0f, 0.0f);
 		}
 		GameObject obj1 = scene->CreateEntity("Floor"); 
 		{
@@ -471,7 +481,7 @@ int main() {
 		GameObject obj9 = scene->CreateEntity("BaseFloorObjects");
 		{
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/BaseFloorObjects.obj");
-			obj9.emplace<RendererComponent>().SetMesh(vao).SetMaterial(baselevelMat);
+			obj9.emplace<RendererComponent>().SetMesh(vao).SetMaterial(baselevelObjectsMat);
 			obj9.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
 			obj9.get<Transform>().SetLocalRotation(90.0f, 0.0f, 0.0f);
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj9);
