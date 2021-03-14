@@ -107,6 +107,7 @@ int main() {
 		BloomEffect* bloomEffect;
 		FilmGrainEffect* filmGrainEffect;
 		PixelateEffect* pixelateEffect;
+		NightVisionEffect* nightVisionEffect;
 		
 		// We'll add some ImGui controls to control our shader
 		BackendHandler::imGuiCallbacks.push_back([&]() {
@@ -191,6 +192,18 @@ int main() {
 						temp->SetPixelSize(pixelSize);
 					}				
 				}
+				if (activeEffect == 7)
+				{
+					ImGui::Text("Active Effect: Night Vision Effect");
+
+					NightVisionEffect* temp = (NightVisionEffect*)effects[activeEffect];
+					float luminosity = temp->GetLuminosity();
+
+					if (ImGui::SliderFloat("Luminosity", &luminosity, 0.0f, 1.f))
+					{
+						temp->SetLuminosity(luminosity);
+					}
+				}
 			}
 
 			if (ImGui::CollapsingHeader("GBuffer Toggles"))
@@ -216,12 +229,12 @@ int main() {
 					drawAlbedoBuffer = false;
 					drawNormalsBuffer = false;
 					drawSpecularBuffer = false;
-					drawGBuffer = false;
+					drawGBuffer = false; 
 					drawIllumBuffer = false;
-				}
+				} 
 				if (ImGui::Checkbox("Specular Buffer", &drawSpecularBuffer))
 				{
-					drawAlbedoBuffer = false;
+					drawAlbedoBuffer = false; 
 					drawNormalsBuffer = false;
 					drawPositionsBuffer = false;
 					drawGBuffer = false;
@@ -248,9 +261,6 @@ int main() {
 			if (ImGui::CollapsingHeader("Light Level Lighting Settings"))
 			{
 				if (ImGui::DragFloat3("Light Direction/Position", glm::value_ptr(illuminationBuffer->GetSunRef()._lightDirection), 0.01f, -100.0f, 100.0f))
-				{
-				}
-				if (ImGui::DragFloat("Ambience", &(illuminationBuffer->GetSunRef()._ambientPow), 0.01f, 0.0, 1.0f))
 				{
 				}
 			}
@@ -575,6 +585,13 @@ int main() {
 			pixelateEffect->Init(width, height);
 		}
 		effects.push_back(pixelateEffect);
+
+		GameObject nightVisionEffectObject = scene->CreateEntity("Night Vision Effect");
+		{
+			nightVisionEffect = &nightVisionEffectObject.emplace<NightVisionEffect>();
+			nightVisionEffect->Init(width, height);
+		}
+		effects.push_back(nightVisionEffect);
 
 		#pragma endregion 
 		//////////////////////////////////////////////////////////////////////////////////////////
