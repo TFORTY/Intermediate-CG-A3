@@ -40,20 +40,20 @@ int main() {
 	std::vector<GameObject> controllables;
 
 	bool drawGBuffer = false;
-	bool drawAlbedoBuffer = false;
+	bool drawAlbedoBuffer = false;  
 	bool drawNormalsBuffer = false; 
 	bool drawPositionsBuffer = false;
 	bool drawSpecularBuffer = false;
-	bool drawIllumBuffer = false;
+	bool drawIllumBuffer = false; 
 
 	BackendHandler::InitAll();
-
+	 
 	// Let OpenGL know that we want debug output, and route it to our handler function
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(BackendHandler::GlDebugMessage, nullptr);
 
 	// Enable texturing
-	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_TEXTURE_2D); 
 
 	// Push another scope so most memory should be freed *before* we exit the app
 	{

@@ -55,7 +55,21 @@ float ShadowCalculation(vec4 fragPosLightSpace, float bias)
 	float currentDepth = projectionCoordinates.z;
 
 	//Check whether there's a shadow
-	float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+	//float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+
+	float shadow = 0.0f;
+
+	vec2 texelSize = 1.0 / textureSize(s_ShadowMap, 0);
+
+	for (int x = -1; x <= 1; ++x)
+	{
+		for (int y = -1; y <= 1; ++y)
+		{
+			float pcf = texture(s_ShadowMap, projectionCoordinates.xy + vec2(x, y) * texelSize).r;
+			shadow += currentDepth - sun._shadowBias > pcf ? 1.0 : 0.0;
+		}
+	}
+	shadow /= 9.0;
 
 	//Return the value
 	return shadow;
