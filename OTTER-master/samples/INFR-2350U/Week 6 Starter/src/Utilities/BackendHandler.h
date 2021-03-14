@@ -10,6 +10,7 @@
 #include "Graphics/Post/BloomEffect.h"
 #include "Graphics/Post/FilmGrainEffect.h"
 #include "Graphics/Post/PixelateEffect.h"
+#include "Graphics/Post/NightVisionEffect.h"
 
 #include <iostream>
 #include <Logging.h>

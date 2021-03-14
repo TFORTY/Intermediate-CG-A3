@@ -81,17 +81,6 @@ int main() {
 		shader->LoadShaderPartFromFile("shaders/directional_blinn_phong_frag.glsl", GL_FRAGMENT_SHADER);
 		shader->Link();
 
-		////Creates our directional Light
-		//DirectionalLight theSun;
-		//UniformBuffer directionalLightBuffer;
-
-		////Allocates enough memory for one directional light (we can change this easily, but we only need 1 directional light)
-		//directionalLightBuffer.AllocateMemory(sizeof(DirectionalLight));
-		////Casts our sun as "data" and sends it to the shader
-		//directionalLightBuffer.SendData(reinterpret_cast<void*>(&theSun), sizeof(DirectionalLight));
-
-		//directionalLightBuffer.Bind(0);
-
 		//Basic effect for drawing to
 		PostEffect* basicEffect;
 		Framebuffer* shadowBuffer;
@@ -107,6 +96,7 @@ int main() {
 		BloomEffect* bloomEffect;
 		FilmGrainEffect* filmGrainEffect;
 		PixelateEffect* pixelateEffect;
+		NightVisionEffect* nightVisionEffect;
 		
 		// We'll add some ImGui controls to control our shader
 		BackendHandler::imGuiCallbacks.push_back([&]() {
@@ -191,8 +181,21 @@ int main() {
 						temp->SetPixelSize(pixelSize);
 					}				
 				}
+				if (activeEffect == 7)
+				{
+					ImGui::Text("Active Effect: Night Vision Effect");
+
+					NightVisionEffect* temp = (NightVisionEffect*)effects[activeEffect];
+					float luminosity = temp->GetLuminosity();
+
+					if (ImGui::SliderFloat("Luminosity", &luminosity, 0.0f, 1.f))
+					{
+						temp->SetLuminosity(luminosity);
+					}
+				}
 			}
 
+			//GBuffer ImGui toggles
 			if (ImGui::CollapsingHeader("GBuffer Toggles"))
 			{
 				if (ImGui::Checkbox("Albedo Buffer", &drawAlbedoBuffer))
@@ -216,12 +219,12 @@ int main() {
 					drawAlbedoBuffer = false;
 					drawNormalsBuffer = false;
 					drawSpecularBuffer = false;
-					drawGBuffer = false;
+					drawGBuffer = false; 
 					drawIllumBuffer = false;
-				}
+				} 
 				if (ImGui::Checkbox("Specular Buffer", &drawSpecularBuffer))
 				{
-					drawAlbedoBuffer = false;
+					drawAlbedoBuffer = false; 
 					drawNormalsBuffer = false;
 					drawPositionsBuffer = false;
 					drawGBuffer = false;
@@ -248,9 +251,6 @@ int main() {
 			if (ImGui::CollapsingHeader("Light Level Lighting Settings"))
 			{
 				if (ImGui::DragFloat3("Light Direction/Position", glm::value_ptr(illuminationBuffer->GetSunRef()._lightDirection), 0.01f, -100.0f, 100.0f))
-				{
-				}
-				if (ImGui::DragFloat("Ambience", &(illuminationBuffer->GetSunRef()._ambientPow), 0.01f, 0.0, 1.0f))
 				{
 				}
 			}
@@ -347,7 +347,6 @@ int main() {
 		ShaderMaterial::sptr controlpanelMat = ShaderMaterial::Create();  
 		ShaderMaterial::sptr stairsMat = ShaderMaterial::Create();  
 
-		//stoneMat->Shader = shader;
 		baselevelMat->Shader = gBufferShader;
 		baselevelMat->Set("s_Diffuse", Baselevel);
 		baselevelMat->Set("s_Specular", noSpec);
@@ -458,9 +457,23 @@ int main() {
 		{
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Drumstick.obj");
 			obj6.emplace<RendererComponent>().SetMesh(vao).SetMaterial(drumstickMat);
-			obj6.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
+			obj6.get<Transform>().SetLocalPosition(0.0f, 9.0f, 0.0f);
 			obj6.get<Transform>().SetLocalRotation(90.0f, 0.0f, 0.0f);
-			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj6);
+
+			auto pathing = BehaviourBinding::Bind<FollowPathBehaviour>(obj6);
+			pathing->Points.push_back({ 0.f, -3.f, 0.f });
+			pathing->Points.push_back({ -2.f, -5.f, 0.f });
+			pathing->Points.push_back({ -3.f, -5.f, 0.f });
+			pathing->Points.push_back({ -4.f, -5.f, 0.f });
+			pathing->Points.push_back({ -5.f, -5.f, 0.f });
+			pathing->Points.push_back({ -6.f, -5.f, 0.f });
+			pathing->Points.push_back({ -7.f, -5.f, 0.f });
+			pathing->Points.push_back({ -8.f, -5.f, 0.f });
+			pathing->Points.push_back({ -8.3f, 5.f, 0.f });
+			pathing->Points.push_back({ -5.f, 5.f, 0.f });
+			pathing->Points.push_back({ -5.f, 9.f, 0.f });
+			pathing->Points.push_back({ 0.f, 9.f, 0.f });
+			pathing->Speed = 6.0f;
 		}
 		GameObject obj7 = scene->CreateEntity("Stairs");
 		{
@@ -474,7 +487,7 @@ int main() {
 		{
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Tower.obj");
 			obj8.emplace<RendererComponent>().SetMesh(vao).SetMaterial(towerMat);
-			obj8.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
+			obj8.get<Transform>().SetLocalPosition(0.0f, 1.0f, 0.0f);
 			obj8.get<Transform>().SetLocalRotation(90.0f, 0.0f, 0.0f);
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj8);
 		}
@@ -490,7 +503,7 @@ int main() {
 		// Create an object to be our camera
 		GameObject cameraObject = scene->CreateEntity("Camera");
 		{
-			cameraObject.get<Transform>().SetLocalPosition(0, 3, 3).LookAt(glm::vec3(0, 0, 0));
+			cameraObject.get<Transform>().SetLocalPosition(2, 3, 6).LookAt(glm::vec3(0, 0, 0));
 
 			// We'll make our camera a component of the camera object
 			Camera& camera = cameraObject.emplace<Camera>();// Camera::Create();
@@ -576,11 +589,17 @@ int main() {
 		}
 		effects.push_back(pixelateEffect);
 
+		GameObject nightVisionEffectObject = scene->CreateEntity("Night Vision Effect");
+		{
+			nightVisionEffect = &nightVisionEffectObject.emplace<NightVisionEffect>();
+			nightVisionEffect->Init(width, height);
+		}
+		effects.push_back(nightVisionEffect);
+
 		#pragma endregion 
 		//////////////////////////////////////////////////////////////////////////////////////////
 
 		/////////////////////////////////// SKYBOX ///////////////////////////////////////////////
-		//{
 			// Load our shaders
 			Shader::sptr skybox = std::make_shared<Shader>();
 			skybox->LoadShaderPartFromFile("shaders/skybox-shader.vert.glsl", GL_VERTEX_SHADER);
@@ -600,8 +619,6 @@ int main() {
 			
 			GameObject skyboxObj = scene->CreateEntity("skybox");  
 			skyboxObj.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
-			//skyboxObj.get_or_emplace<RendererComponent>().SetMesh(meshVao).SetMaterial(skyboxMat).SetCastShadow(false);
-		//}
 		////////////////////////////////////////////////////////////////////////////////////////
 
 		// We'll use a vector to store all our key press events for now (this should probably be a behaviour eventually)
@@ -678,8 +695,6 @@ int main() {
 
 			// Clear the screen
 			basicEffect->Clear();
-			/*greyscaleEffect->Clear();
-			sepiaEffect->Clear();*/
 			for (int i = 0; i < effects.size(); i++)
 			{
 				effects[i]->Clear();
@@ -706,7 +721,6 @@ int main() {
 
 			//Set up light space matrix
 			glm::mat4 lightProjectionMatrix = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, -30.0f, 30.0f);
-			//glm::mat4 lightViewMatrix = glm::lookAt(glm::vec3(-theSun._lightDirection), glm::vec3(), glm::vec3(0.0f, 0.0f, 1.0f));
 			glm::mat4 lightViewMatrix = glm::lookAt(glm::vec3(-illuminationBuffer->GetSunRef()._lightDirection), glm::vec3(), glm::vec3(0.0f, 0.0f, 1.0f));
 			glm::mat4 lightSpaceViewProj = lightProjectionMatrix * lightViewMatrix;
 
@@ -753,7 +767,6 @@ int main() {
 			glfwGetWindowSize(BackendHandler::window, &width, &height);
 
 			glViewport(0, 0, width, height);
-			//basicEffect->BindBuffer(0);
 			gBuffer->Bind();
 			// Iterate over the render group components and draw them
 			renderGroup.each([&](entt::entity e, RendererComponent& renderer, Transform& transform) {
@@ -769,13 +782,10 @@ int main() {
 					currentMat->Apply();
 				}
 
-				//shadowBuffer->BindDepthAsTexture(30);
 				// Render the mesh
 				BackendHandler::RenderVAO(renderer.Material->Shader, renderer.Mesh, viewProjection, transform, lightSpaceViewProj);			
 			});
 
-			//shadowBuffer->UnbindTexture(30);
-			//basicEffect->UnbindBuffer();
 			gBuffer->Unbind();
 
 			illuminationBuffer->BindBuffer(0);
@@ -794,20 +804,7 @@ int main() {
 
 			shadowBuffer->UnbindTexture(30);
 
-			/*if (drawGBuffer)
-			{
-				gBuffer->DrawBuffersToScreen();
-			}
-			else if (drawIllumBuffer)
-			{
-				illuminationBuffer->DrawIllumBuffer();
-			}
-			else
-			{
-				effects[activeEffect]->ApplyEffect(illuminationBuffer);
-				effects[activeEffect]->DrawToScreen();
-			}*/
-
+			//Draws the corresponding buffer
 			if (drawAlbedoBuffer)
 			{
 				gBuffer->DrawAlbedoBuffer();
@@ -845,12 +842,9 @@ int main() {
 			glfwSwapBuffers(BackendHandler::window);
 			time.LastFrame = time.CurrentFrame;
 		}
-		//directionalLightBuffer.Unbind(0);
 
 		// Nullify scene so that we can release references
 		Application::Instance().ActiveScene = nullptr;
-		//Clean up the environment generator so we can release references
-		//EnvironmentGenerator::CleanUpPointers();
 		BackendHandler::ShutdownImGui();
 	}	
 

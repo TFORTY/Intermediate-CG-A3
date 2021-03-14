@@ -11,7 +11,7 @@ uniform float u_Luminosity;
 //https://tobiasbu.wordpress.com/2016/01/16/opengl-night-vision-shader/
 void main()
 {
-	//Grab the framebuffer 
+	//Load in the source image with its UVs
 	vec4 source = texture(s_Tex, inUV);
 
 	//Green colour is dominant. Need to eliminate the red and blue channels but set a color proportion
@@ -19,6 +19,7 @@ void main()
 	//Returned value will be the intensity of the color fragment
 	float luminosity = (source.r * 0.3f) + (source.g * 0.59f) + (source.b * 0.11f);
 
-	frag_color.rgb = mix(source.rgb, vec3(0.0, luminosity, 0.0), u_Luminosity);
+	//Mixes just the green channel 
+	frag_color.rgb = mix(source.rgb, vec3(0, luminosity, 0), u_Luminosity);
 	frag_color.a = source.a;
 }
