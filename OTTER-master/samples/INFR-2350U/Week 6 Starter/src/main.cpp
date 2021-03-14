@@ -252,19 +252,9 @@ int main() {
 				}
 			}
 
-			//if (ImGui::CollapsingHeader("Environment generation"))
-			//{
-			//	if (ImGui::Button("Regenerate Environment", ImVec2(200.0f, 40.0f)))
-			//	{
-			//		EnvironmentGenerator::RegenerateEnvironment();
-			//	}
-			//}
-
 			if (ImGui::CollapsingHeader("Light Level Lighting Settings"))
 			{
-				/*if (ImGui::DragFloat3("Light Direction/Position", glm::value_ptr(theSun._lightDirection), 0.01f, -10.0f, 10.0f)) 
-				{
-				}*/
+
 				if (ImGui::DragFloat3("Light Direction/Position", glm::value_ptr(illuminationBuffer->GetSunRef()._lightDirection), 0.01f, -10.0f, 10.0f))
 				{
 				}
@@ -293,7 +283,7 @@ int main() {
 
 		// GL states
 		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_CULL_FACE);
+		//glEnable(GL_CULL_FACE);
 		glDepthFunc(GL_LEQUAL); // New 
 
 		///////////////////////////////////// Texture Loading //////////////////////////////////////////////////
@@ -350,62 +340,82 @@ int main() {
 		stoneMat->Set("u_Shininess", 2.0f);
 		stoneMat->Set("u_TextureMix", 0.0f); 
 
-		ShaderMaterial::sptr grassMat = ShaderMaterial::Create();
-		//grassMat->Shader = shader;
-		grassMat->Shader = gBufferShader;
-		grassMat->Set("s_Diffuse", grass);
-		grassMat->Set("s_Specular", noSpec);
-		grassMat->Set("u_Shininess", 2.0f);
-		grassMat->Set("u_TextureMix", 0.0f);
-
-		ShaderMaterial::sptr boxMat = ShaderMaterial::Create();
-		//boxMat->Shader = shader;
-		boxMat->Shader = gBufferShader;
-		boxMat->Set("s_Diffuse", box);
-		boxMat->Set("s_Specular", boxSpec);
-		boxMat->Set("u_Shininess", 8.0f);
-		boxMat->Set("u_TextureMix", 0.0f);
-
-		ShaderMaterial::sptr simpleFloraMat = ShaderMaterial::Create();
-		//simpleFloraMat->Shader = shader;
-		simpleFloraMat->Shader = gBufferShader;
-		simpleFloraMat->Set("s_Diffuse", simpleFlora);
-		simpleFloraMat->Set("s_Specular", noSpec);
-		simpleFloraMat->Set("u_Shininess", 8.0f);
-		simpleFloraMat->Set("u_TextureMix", 0.0f);
-
-		GameObject obj1 = scene->CreateEntity("Ground"); 
+		GameObject obj = scene->CreateEntity("Ground Floor");
 		{
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/plane.obj");
-			obj1.emplace<RendererComponent>().SetMesh(vao).SetMaterial(grassMat);
+			obj.emplace<RendererComponent>().SetMesh(vao).SetMaterial(stoneMat);
 		}
-
-		GameObject obj2 = scene->CreateEntity("monkey_quads");
+		GameObject obj1 = scene->CreateEntity("Floor"); 
 		{
-			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/monkey_quads.obj");
+			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Floor.obj");
+			obj1.emplace<RendererComponent>().SetMesh(vao).SetMaterial(stoneMat);
+			obj1.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
+			obj1.get<Transform>().SetLocalRotation(90.0f, 0.0f, 0.0f);
+		}
+		GameObject obj2 = scene->CreateEntity("Building");
+		{
+			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Building.obj");
 			obj2.emplace<RendererComponent>().SetMesh(vao).SetMaterial(stoneMat);
-			obj2.get<Transform>().SetLocalPosition(0.0f, 0.0f, 2.0f);
-			obj2.get<Transform>().SetLocalRotation(0.0f, 0.0f, -90.0f);
+			obj2.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
+			obj2.get<Transform>().SetLocalRotation(90.0f, 0.0f, 0.0f);
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj2);
 		}
-
-		//std::vector<glm::vec2> allAvoidAreasFrom = { glm::vec2(-4.0f, -4.0f) };
-		//std::vector<glm::vec2> allAvoidAreasTo = { glm::vec2(4.0f, 4.0f) };
-		//
-		//std::vector<glm::vec2> rockAvoidAreasFrom = { glm::vec2(-3.0f, -3.0f), glm::vec2(-19.0f, -19.0f), glm::vec2(5.0f, -19.0f),
-		//												glm::vec2(-19.0f, 5.0f), glm::vec2(-19.0f, -19.0f) };
-		//std::vector<glm::vec2> rockAvoidAreasTo = { glm::vec2(3.0f, 3.0f), glm::vec2(19.0f, -5.0f), glm::vec2(19.0f, 19.0f),
-		//												glm::vec2(19.0f, 19.0f), glm::vec2(-5.0f, 19.0f) };
-		//glm::vec2 spawnFromHere = glm::vec2(-19.0f, -19.0f);
-		//glm::vec2 spawnToHere = glm::vec2(19.0f, 19.0f);
-		//
-		//EnvironmentGenerator::AddObjectToGeneration("models/simplePine.obj", simpleFloraMat, 40,
-		//	spawnFromHere, spawnToHere, allAvoidAreasFrom, allAvoidAreasTo);
-		//EnvironmentGenerator::AddObjectToGeneration("models/simpleTree.obj", simpleFloraMat, 40,
-		//	spawnFromHere, spawnToHere, allAvoidAreasFrom, allAvoidAreasTo);
-		//EnvironmentGenerator::AddObjectToGeneration("models/simpleRock.obj", simpleFloraMat, 24,
-		//	spawnFromHere, spawnToHere, rockAvoidAreasFrom, rockAvoidAreasTo);
-		//EnvironmentGenerator::GenerateEnvironment();
+		GameObject obj3 = scene->CreateEntity("Building2");
+		{
+			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Building2.obj");
+			obj3.emplace<RendererComponent>().SetMesh(vao).SetMaterial(stoneMat);
+			obj3.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
+			obj3.get<Transform>().SetLocalRotation(90.0f, 0.0f, 0.0f);
+			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj3);
+		}
+		GameObject obj4 = scene->CreateEntity("Computer");
+		{
+			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Computer.obj");
+			obj4.emplace<RendererComponent>().SetMesh(vao).SetMaterial(stoneMat);
+			obj4.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
+			obj4.get<Transform>().SetLocalRotation(90.0f, 0.0f, 0.0f);
+			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj4);
+		}
+		GameObject obj5 = scene->CreateEntity("Control Panel");
+		{
+			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Control Panel.obj");
+			obj5.emplace<RendererComponent>().SetMesh(vao).SetMaterial(stoneMat);
+			obj5.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
+			obj5.get<Transform>().SetLocalRotation(90.0f, 0.0f, 0.0f);
+			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj5);
+		}
+		GameObject obj6 = scene->CreateEntity("Drumstick");
+		{
+			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Drumstick.obj");
+			obj6.emplace<RendererComponent>().SetMesh(vao).SetMaterial(stoneMat);
+			obj6.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
+			obj6.get<Transform>().SetLocalRotation(90.0f, 0.0f, 0.0f);
+			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj6);
+		}
+		GameObject obj7 = scene->CreateEntity("Stairs");
+		{
+			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Stairs.obj");
+			obj7.emplace<RendererComponent>().SetMesh(vao).SetMaterial(stoneMat);
+			obj7.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
+			obj7.get<Transform>().SetLocalRotation(90.0f, 0.0f, 0.0f);
+			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj7);
+		}
+		GameObject obj8 = scene->CreateEntity("Tower");
+		{
+			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Tower.obj");
+			obj8.emplace<RendererComponent>().SetMesh(vao).SetMaterial(stoneMat);
+			obj8.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
+			obj8.get<Transform>().SetLocalRotation(90.0f, 0.0f, 0.0f);
+			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj8);
+		}
+		GameObject obj9 = scene->CreateEntity("BaseFloorObjects");
+		{
+			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/BaseFloorObjects.obj");
+			obj9.emplace<RendererComponent>().SetMesh(vao).SetMaterial(stoneMat);
+			obj9.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
+			obj9.get<Transform>().SetLocalRotation(90.0f, 0.0f, 0.0f);
+			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj9);
+		}
 
 		// Create an object to be our camera
 		GameObject cameraObject = scene->CreateEntity("Camera");
@@ -414,7 +424,7 @@ int main() {
 
 			// We'll make our camera a component of the camera object
 			Camera& camera = cameraObject.emplace<Camera>();// Camera::Create();
-			camera.SetPosition(glm::vec3(0, 3, 3));
+			camera.SetPosition(glm::vec3(-3, 3, 10));
 			camera.SetUp(glm::vec3(0, 0, 1));
 			camera.LookAt(glm::vec3(0));
 			camera.SetFovDegrees(90.0f); // Set an initial FOV
