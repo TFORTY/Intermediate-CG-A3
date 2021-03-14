@@ -149,13 +149,6 @@ int main() {
 					ImGui::Text("Active Effect: Color Correct Effect");
 
 					ColorCorrectEffect* temp = (ColorCorrectEffect*)effects[activeEffect];
-					//static char input[BUFSIZ];
-					//ImGui::InputText("Lut File to Use", input, BUFSIZ);
-					//
-					//if (ImGui::Button("SetLUT", ImVec2(200.0f, 40.0f)))
-					//{
-					//	temp->SetLUT(LUT3D(std::string(input)));
-					//}
 				}
 				if (activeEffect == 4)
 				{
@@ -254,8 +247,10 @@ int main() {
 
 			if (ImGui::CollapsingHeader("Light Level Lighting Settings"))
 			{
-
-				if (ImGui::DragFloat3("Light Direction/Position", glm::value_ptr(illuminationBuffer->GetSunRef()._lightDirection), 0.01f, -10.0f, 10.0f))
+				if (ImGui::DragFloat3("Light Direction/Position", glm::value_ptr(illuminationBuffer->GetSunRef()._lightDirection), 0.01f, -100.0f, 100.0f))
+				{
+				}
+				if (ImGui::DragFloat("Ambience", &(illuminationBuffer->GetSunRef()._ambientPow), 0.01f, 0.0, 1.0f))
 				{
 				}
 			}
@@ -290,13 +285,21 @@ int main() {
 		#pragma region Texture
 
 		// Load some textures from files
-		Texture2D::sptr stone = Texture2D::LoadFromFile("images/Stone_001_Diffuse.png");
-		Texture2D::sptr stoneSpec = Texture2D::LoadFromFile("images/Stone_001_Specular.png");
-		Texture2D::sptr grass = Texture2D::LoadFromFile("images/grass.jpg");
-		Texture2D::sptr noSpec = Texture2D::LoadFromFile("images/grassSpec.png");
-		Texture2D::sptr box = Texture2D::LoadFromFile("images/box.bmp");
-		Texture2D::sptr boxSpec = Texture2D::LoadFromFile("images/box-reflections.bmp");
-		Texture2D::sptr simpleFlora = Texture2D::LoadFromFile("images/SimpleFlora.png");
+		
+		Texture2D::sptr Baselevel = Texture2D::LoadFromFile("images/Base Level_color.png");
+		Texture2D::sptr Building = Texture2D::LoadFromFile("images/Building_color.png");		
+		Texture2D::sptr Building2 = Texture2D::LoadFromFile("images/Building2_color.png");
+		Texture2D::sptr Floor = Texture2D::LoadFromFile("images/Floor_color.png");
+		Texture2D::sptr Monitor = Texture2D::LoadFromFile("images/Monitor-Albedo.png");
+		Texture2D::sptr Tower = Texture2D::LoadFromFile("images/Tower_color.png");
+		Texture2D::sptr Drumstick = Texture2D::LoadFromFile("images/DrumstickTexture.png");
+		Texture2D::sptr ControlPanel = Texture2D::LoadFromFile("images/ControlPanel_color.jpg");
+		Texture2D::sptr Stairs = Texture2D::LoadFromFile("images/Stairs_color.png");
+		
+		Texture2D::sptr ControlPanelSpec = Texture2D::LoadFromFile("images/ControlPanel_Specular.jpg");
+		Texture2D::sptr noSpec = Texture2D::LoadFromFile("images/noSpec.png");
+		
+
 		LUT3D testCube("cubes/BrightenedCorrection.cube");
 
 		// Load the cube map
@@ -332,30 +335,87 @@ int main() {
 			scene->Registry().group<RendererComponent>(entt::get_t<Transform>());
 
 		// Create a material and set some properties for it
-		ShaderMaterial::sptr stoneMat = ShaderMaterial::Create();  
+		ShaderMaterial::sptr baselevelMat = ShaderMaterial::Create();  
+		ShaderMaterial::sptr buildingMat = ShaderMaterial::Create();  
+		ShaderMaterial::sptr building2Mat = ShaderMaterial::Create();  
+		ShaderMaterial::sptr floorMat = ShaderMaterial::Create();  
+		ShaderMaterial::sptr monitorMat = ShaderMaterial::Create();  
+		ShaderMaterial::sptr towerMat = ShaderMaterial::Create();  
+		ShaderMaterial::sptr drumstickMat = ShaderMaterial::Create();  
+		ShaderMaterial::sptr controlpanelMat = ShaderMaterial::Create();  
+		ShaderMaterial::sptr stairsMat = ShaderMaterial::Create();  
+
 		//stoneMat->Shader = shader;
-		stoneMat->Shader = gBufferShader;
-		stoneMat->Set("s_Diffuse", stone);
-		stoneMat->Set("s_Specular", stoneSpec);
-		stoneMat->Set("u_Shininess", 2.0f);
-		stoneMat->Set("u_TextureMix", 0.0f); 
+		baselevelMat->Shader = gBufferShader;
+		baselevelMat->Set("s_Diffuse", Baselevel);
+		baselevelMat->Set("s_Specular", noSpec);
+		baselevelMat->Set("u_Shininess", 2.0f);
+		baselevelMat->Set("u_TextureMix", 0.0f); 
+		
+		buildingMat->Shader = gBufferShader;
+		buildingMat->Set("s_Diffuse", Building);
+		buildingMat->Set("s_Specular", noSpec);
+		buildingMat->Set("u_Shininess", 2.0f);
+		buildingMat->Set("u_TextureMix", 0.0f); 
+		
+		building2Mat->Shader = gBufferShader;
+		building2Mat->Set("s_Diffuse", Building2);
+		building2Mat->Set("s_Specular", noSpec);
+		building2Mat->Set("u_Shininess", 2.0f);
+		building2Mat->Set("u_TextureMix", 0.0f); 
+		
+		floorMat->Shader = gBufferShader;
+		floorMat->Set("s_Diffuse", Floor);
+		floorMat->Set("s_Specular", noSpec);
+		floorMat->Set("u_Shininess", 2.0f);
+		floorMat->Set("u_TextureMix", 0.0f); 
+		
+		monitorMat->Shader = gBufferShader;
+		monitorMat->Set("s_Diffuse", Monitor);
+		monitorMat->Set("s_Specular", noSpec);
+		monitorMat->Set("u_Shininess", 4.0f);
+		monitorMat->Set("u_TextureMix", 0.0f); 
+		
+		towerMat->Shader = gBufferShader;
+		towerMat->Set("s_Diffuse", Tower);
+		towerMat->Set("s_Specular", noSpec);
+		towerMat->Set("u_Shininess", 2.0f);
+		towerMat->Set("u_TextureMix", 0.0f); 
+		
+		drumstickMat->Shader = gBufferShader;
+		drumstickMat->Set("s_Diffuse", Drumstick);
+		drumstickMat->Set("s_Specular", noSpec);
+		drumstickMat->Set("u_Shininess", 2.0f);
+		drumstickMat->Set("u_TextureMix", 0.0f); 
+		
+		controlpanelMat->Shader = gBufferShader;
+		controlpanelMat->Set("s_Diffuse", ControlPanel);
+		controlpanelMat->Set("s_Specular", ControlPanelSpec);
+		controlpanelMat->Set("u_Shininess", 4.0f);
+		controlpanelMat->Set("u_TextureMix", 0.0f); 	
+		
+		stairsMat->Shader = gBufferShader;
+		stairsMat->Set("s_Diffuse", Stairs);
+		stairsMat->Set("s_Specular", noSpec);
+		stairsMat->Set("u_Shininess", 4.0f);
+		stairsMat->Set("u_TextureMix", 0.0f); 
 
 		GameObject obj = scene->CreateEntity("Ground Floor");
 		{
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/plane.obj");
-			obj.emplace<RendererComponent>().SetMesh(vao).SetMaterial(stoneMat);
+			obj.emplace<RendererComponent>().SetMesh(vao).SetMaterial(floorMat);
 		}
 		GameObject obj1 = scene->CreateEntity("Floor"); 
 		{
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Floor.obj");
-			obj1.emplace<RendererComponent>().SetMesh(vao).SetMaterial(stoneMat);
+			obj1.emplace<RendererComponent>().SetMesh(vao).SetMaterial(floorMat);
 			obj1.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
 			obj1.get<Transform>().SetLocalRotation(90.0f, 0.0f, 0.0f);
 		}
 		GameObject obj2 = scene->CreateEntity("Building");
 		{
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Building.obj");
-			obj2.emplace<RendererComponent>().SetMesh(vao).SetMaterial(stoneMat);
+			obj2.emplace<RendererComponent>().SetMesh(vao).SetMaterial(buildingMat);
 			obj2.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
 			obj2.get<Transform>().SetLocalRotation(90.0f, 0.0f, 0.0f);
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj2);
@@ -363,7 +423,7 @@ int main() {
 		GameObject obj3 = scene->CreateEntity("Building2");
 		{
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Building2.obj");
-			obj3.emplace<RendererComponent>().SetMesh(vao).SetMaterial(stoneMat);
+			obj3.emplace<RendererComponent>().SetMesh(vao).SetMaterial(building2Mat);
 			obj3.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
 			obj3.get<Transform>().SetLocalRotation(90.0f, 0.0f, 0.0f);
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj3);
@@ -371,7 +431,7 @@ int main() {
 		GameObject obj4 = scene->CreateEntity("Computer");
 		{
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Computer.obj");
-			obj4.emplace<RendererComponent>().SetMesh(vao).SetMaterial(stoneMat);
+			obj4.emplace<RendererComponent>().SetMesh(vao).SetMaterial(monitorMat);
 			obj4.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
 			obj4.get<Transform>().SetLocalRotation(90.0f, 0.0f, 0.0f);
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj4);
@@ -379,7 +439,7 @@ int main() {
 		GameObject obj5 = scene->CreateEntity("Control Panel");
 		{
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Control Panel.obj");
-			obj5.emplace<RendererComponent>().SetMesh(vao).SetMaterial(stoneMat);
+			obj5.emplace<RendererComponent>().SetMesh(vao).SetMaterial(controlpanelMat);
 			obj5.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
 			obj5.get<Transform>().SetLocalRotation(90.0f, 0.0f, 0.0f);
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj5);
@@ -387,7 +447,7 @@ int main() {
 		GameObject obj6 = scene->CreateEntity("Drumstick");
 		{
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Drumstick.obj");
-			obj6.emplace<RendererComponent>().SetMesh(vao).SetMaterial(stoneMat);
+			obj6.emplace<RendererComponent>().SetMesh(vao).SetMaterial(drumstickMat);
 			obj6.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
 			obj6.get<Transform>().SetLocalRotation(90.0f, 0.0f, 0.0f);
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj6);
@@ -395,7 +455,7 @@ int main() {
 		GameObject obj7 = scene->CreateEntity("Stairs");
 		{
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Stairs.obj");
-			obj7.emplace<RendererComponent>().SetMesh(vao).SetMaterial(stoneMat);
+			obj7.emplace<RendererComponent>().SetMesh(vao).SetMaterial(stairsMat);
 			obj7.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
 			obj7.get<Transform>().SetLocalRotation(90.0f, 0.0f, 0.0f);
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj7);
@@ -403,7 +463,7 @@ int main() {
 		GameObject obj8 = scene->CreateEntity("Tower");
 		{
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/Tower.obj");
-			obj8.emplace<RendererComponent>().SetMesh(vao).SetMaterial(stoneMat);
+			obj8.emplace<RendererComponent>().SetMesh(vao).SetMaterial(towerMat);
 			obj8.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
 			obj8.get<Transform>().SetLocalRotation(90.0f, 0.0f, 0.0f);
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj8);
@@ -411,7 +471,7 @@ int main() {
 		GameObject obj9 = scene->CreateEntity("BaseFloorObjects");
 		{
 			VertexArrayObject::sptr vao = ObjLoader::LoadFromFile("models/BaseFloorObjects.obj");
-			obj9.emplace<RendererComponent>().SetMesh(vao).SetMaterial(stoneMat);
+			obj9.emplace<RendererComponent>().SetMesh(vao).SetMaterial(baselevelMat);
 			obj9.get<Transform>().SetLocalPosition(0.0f, 0.0f, 0.0f);
 			obj9.get<Transform>().SetLocalRotation(90.0f, 0.0f, 0.0f);
 			BehaviourBinding::BindDisabled<SimpleMoveBehaviour>(obj9);
@@ -767,12 +827,6 @@ int main() {
 				effects[activeEffect]->ApplyEffect(illuminationBuffer);
 				effects[activeEffect]->DrawToScreen();
 			}
-
-			//gBuffer->DrawBuffersToScreen();
-
-			//effects[activeEffect]->ApplyEffect(basicEffect);
-			
-			//effects[activeEffect]->DrawToScreen();
 			
 			// Draw our ImGui content
 			BackendHandler::RenderImGui();
